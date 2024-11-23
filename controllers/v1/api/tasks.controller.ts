@@ -11,11 +11,11 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 interface UserMap {
-    fire: number[];
-    civil: number[];
-    plumbing: number[];
-    electric: number[];
-    other: number[];
+    fire: string[];
+    civil: string[];
+    plumbing: string[];
+    electric: string[];
+    other: string[];
 }
 
 interface IndexMap {
@@ -94,9 +94,9 @@ export class TasksController extends MasterController {
                 
                 if (mappedValues.length > 0) {
                     const finalCategory = this.determineFinalCategory(mappedValues);
-                    taskCategories.set(task.task_id, finalCategory);
+                    taskCategories.set(task.id, finalCategory);
                 } else {
-                    taskCategories.set(task.task_id, 'other');
+                    taskCategories.set(task.id, 'other');
                 }
             }
         });
@@ -127,11 +127,11 @@ export class TasksController extends MasterController {
         try {
             const response = await axios.get(this.usersApiUrl);
             const users = response.data.data.rows;
-            // console.log(users)
+            console.log(users)
             users.forEach(user => {
                 const category = user.cat_name || 'other';
                 if (category in userMap) {
-                    userMap[category as keyof UserMap].push(user.id);
+                    userMap[category as keyof UserMap].push(`${user.first_name}  ${user.last_name}`);
                 }
             });
 
@@ -147,7 +147,7 @@ export class TasksController extends MasterController {
         category: string,
         userMap: UserMap,
         indexMap: IndexMap
-    ): number | null {
+    ): string | null {
         if (category === 'other') {
             return null;
         }
@@ -181,7 +181,8 @@ export class TasksController extends MasterController {
             // const tasks = tasksResponse.data.data.rows;
             const tasks = tasksResponse.data?.data?.rows;
         
-        // console.log('Tasks received:', tasks?.length || 0);
+        console.log('Tasks received:', tasks?.length || 0);
+        
         
         if (!tasks || !Array.isArray(tasks)) {
             throw new Error(`Invalid tasks data received: ${JSON.stringify(tasksResponse.data)}`);
@@ -199,7 +200,7 @@ export class TasksController extends MasterController {
     
 
             // // Assign tasks to users
-            const taskAssignments = new Map<number, number>();
+            const taskAssignments = new Map<number, string>();
 
             taskCategories.forEach((category, taskId) => {
                 // console.log(category, taskId)

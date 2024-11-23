@@ -72,7 +72,7 @@ export class TasksModel extends MasterModel {
     }
     
 
-    public async bulkUpdateAssignedUsers(assignments: Map<number, number>) {
+    public async bulkUpdateAssignedUsers(assignments: Map<number, string>) {
         const startMS = new Date().getTime();
         const resModel = { ...ResponseEntity };
         let queryModel = { ...QueryEntity };
@@ -86,7 +86,7 @@ export class TasksModel extends MasterModel {
                     const userParamIndex = index * 2 + 1;
                     const taskParamIndex = index * 2 + 2;
                     values.push(userId, taskId);
-                    return `WHEN task_id = $${taskParamIndex}::integer THEN $${userParamIndex}::integer`;
+                    return `WHEN id = $${taskParamIndex}::integer THEN $${userParamIndex}::text`;
                 })
                 .join('\n');
     
@@ -97,7 +97,7 @@ export class TasksModel extends MasterModel {
                 SET responsibility = CASE 
                     ${cases}
                     END
-                WHERE task_id = ANY($${values.length + 1}::integer[])
+                WHERE id = ANY($${values.length + 1}::integer[])
             `;
           
             
